@@ -1,0 +1,28 @@
+AWSTemplateFormatVersion: 2010-09-09
+Description: Portfolios
+
+Resources:
+  ResearchersGroupA:
+    Type: AWS::ServiceCatalog::Portfolio
+    Properties: 
+      Description: Analytical Tools for Researchers
+      DisplayName: Researchers - Group A
+      ProviderName: Administrator
+
+  ResearchersGroupB:
+    Type: AWS::ServiceCatalog::Portfolio
+    Properties: 
+      Description: Analytical Tools for Researchers
+      DisplayName: Researchers - Group B
+      ProviderName: Administrator      
+
+Outputs:
+  PortfolioResearchersGroupA:
+    Value: !Ref ResearchersGroupA
+    Export:
+      Name: PortfolioResearchersGroupA
+
+  PortfolioResearchersGroupB:
+    Value: !Ref ResearchersGroupB
+    Export:
+      Name: PortfolioResearchersGroupB

@@ -1,0 +1,55 @@
+AWSTemplateFormatVersion: 2010-09-09
+Description: Products
+
+Resources:
+  JupyterNotebook:
+    Type: AWS::ServiceCatalog::CloudFormationProduct
+    Properties: 
+      Description: Jupyter Notebook 
+      Distributor: Jupyter Labs
+      Name: JupyterNotebook
+      Owner: Administrator
+      ProvisioningArtifactParameters: 
+        - Description: Template for Jupyter Notebook
+          DisableTemplateValidation: False
+          Info:
+            LoadTemplateFromURL: https://sc-s3-productbucket-doxr6cfwu2ud.s3.amazonaws.com/ServiceCatalog/JupyterNotebook.yaml
+              # Fn::Join: 
+              #   - ""
+              #   - - "https://"
+              #     - Fn::ImportValue: 
+              #         !Sub S3DomainName
+              #     - "/ServiceCatalog/JupiterNotebook.yaml"
+          Name: v1
+
+  Windows2019:
+    Type: AWS::ServiceCatalog::CloudFormationProduct
+    Properties: 
+      Description: Windows 2019
+      Distributor: Microsoft
+      Name: Windows-2019
+      Owner: Administrator
+      ProvisioningArtifactParameters: 
+        - Description: Template for Windows 2019
+          DisableTemplateValidation: False
+          Info:
+            LoadTemplateFromURL: https://sc-s3-productbucket-doxr6cfwu2ud.s3.amazonaws.com/ServiceCatalog/Windows.yaml
+              # Fn::Join: 
+              #   - ""
+              #   - - "https://"
+              #     - Fn::ImportValue: 
+              #         !Sub S3DomainName
+              #     - "/ServiceCatalog/JupiterNotebook.yaml"
+          Name: V1
+
+
+Outputs:
+  ProductJupyterNotebook:
+    Value: !Ref JupyterNotebook
+    Export:
+      Name: ProductJupyterNotebook
+
+  ProductWindows2019:
+    Value: !Ref Windows2019
+    Export:
+      Name: ProductWindows2019      

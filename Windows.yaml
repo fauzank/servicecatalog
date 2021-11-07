@@ -1,0 +1,166 @@
+AWSTemplateFormatVersion: 2010-09-09
+Description: Windows Template
+
+Parameters:
+  InstanceType:
+    Description: The AWS instance type to use for Windows. See https://aws.amazon.com/ec2/instance-types
+      for a list of instance types.
+    Default: t3.medium
+    Type: String
+    AllowedValues: 
+      - t3.medium
+      - m5.large
+      - m5.xlarge
+      - m5.2xlarge
+
+  InstanceName:
+    Description: Give your Windows virtual machine a name
+    Default: Windows Desktop
+    Type: String
+
+  RootVolumeSize:
+    Description: Specify the size in GB of the root volume
+    Default: '128'
+    Type: Number
+    MinValue: '128'
+    MaxValue: '1024'
+    ConstraintDescription: Size must be between 64 and 1024GB
+
+  RDPKeyName:
+    Description: The name of an existing EC2 KeyPair to allow RDP access to all the
+      instances. See https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/ec2-key-pairs.html
+      for details on creating these.
+    Type: AWS::EC2::KeyPair::KeyName
+    ConstraintDescription: must be the name of an existing EC2 KeyPair.
+    AllowedPattern: ".+"
+
+  ClientIPAddress:
+    Description: 'The IP address range that will be allowed to connect to this instance
+      from outside of the VPC. This field should be formatted as <ip_address>/<mask>.
+      E.g. 10.0.0.1/32. This is the public IP address which can be found by searching
+      for ''what is my ip address'' on the web. The mask determines the number of
+      IP addresses to include. A mask of 32 is a single IP address. This calculator
+      can be used to build a specific range: https://www.ipaddressguide.com/cidr.
+      You may need to contact your IT administrator to determine which address is
+      appropriate.'
+    Type: String
+    MinLength: '9'
+    MaxLength: '18'
+    AllowedPattern: "(\\d{1,3})\\.(\\d{1,3})\\.(\\d{1,3})\\.(\\d{1,3})/(\\d{1,2})"
+    ConstraintDescription: Must be a valid IP CIDR range of the form x.x.x.x/x.
+
+  Password:
+    NoEcho: 'true'
+    Description: Enter a password for the user Administrator
+    Type: String
+    AllowedPattern: "^((?=.*[0-9])(?=.*[a-z])(?=.*[A-Z])|(?=.*[0-9])(?=.*[a-z])(?=.*[!@#$%^&*])|(?=.*[0-9])(?=.*[A-Z])(?=.*[!@#$%^&*])|(?=.*[a-z])(?=.*[A-Z])(?=.*[!@#$%^&*])).{14,72}$"
+    ConstraintDescription: Your password must contain at least 14 characters, an upper
+      and a lower case character, a digit, and a special character.
+
+  ConfirmPassword:
+    NoEcho: 'true'
+    Description: Confirm Password
+    Type: String
+    ConstraintDescription: ''
+
+Rules:
+  matchPasswords:
+    Assertions:
+    - Assert:
+        Fn::Equals:
+        - Ref: Password
+        - Ref: ConfirmPassword
+      AssertDescription: Passwords do not match
+
+Metadata:
+  AWS::CloudFormation::Interface:
+    ParameterGroups:
+    - Label:
+        default: EC2 Instance
+      Parameters:
+      - InstanceName
+      - InstanceType
+      - RootVolumeSize
+    - Label:
+        default: Remote Access
+      Parameters:
+      - ClientIPAddress
+      - RDPKeyName
+      - Password
+      - ConfirmPassword
+    ParameterLabels:
+      ClientIPAddress:
+        default: Allow RDP connections from
+      InstanceType:
+        default: AWS EC2 Instance type
+      InstanceName:
+        default: Instance Name
+      RootVolumeSize:
+        default: Storage Size (GiB)
+      Password:
+        default: Remote password
+      ConfirmPassword:
+        default: Confirm remote password
+      RDPKeyName:
+        default: RDP Key Pair
+
+Resources: 
+  WindowsInstance: 
+    Type : AWS::EC2::Instance
+    Properties: 
+      InstanceType: !Ref InstanceType
+      SubnetId: 
+        Fn::ImportValue: PublicSubnet1
+      SecurityGroupIds: 
+        - !GetAtt WindowsSecurityGroup.GroupId
+      KeyName: !Ref RDPKeyName
+      ImageId: ami-0f93c815788872c5d
+      EbsOptimized: "true"
+      BlockDeviceMappings: 
+        - DeviceName: "/dev/sda1"
+          Ebs: 
+            VolumeType: gp3
+            VolumeSize: !Ref RootVolumeSize
+      UserData:
+      UserData:
+        Fn::Base64:
+          Fn::Join:
+          - ''
+          - - "<powershell>\n"
+            - 'net user Administrator '
+            - !Ref Password
+            - "\n"
+            - "</powershell>\n"
+            - "<persist>true</persist>"          
+      Tags:
+        - Key: Name
+          Value:
+            Ref: InstanceName              
+    # CreationPolicy:
+    #   ResourceSignal:
+    #     Count: '1'
+    #     Timeout: PT30M
+
+
+  WindowsSecurityGroup: 
+    Type: AWS::EC2::SecurityGroup
+    Properties: 
+      GroupDescription: Enable RDP access via port 3389
+      GroupName: Windows-RDP-SG
+      VpcId: 
+        Fn::ImportValue: VPC     
+
+  RDPInboundRule:
+    Type: 'AWS::EC2::SecurityGroupIngress'
+    Properties:
+      GroupId: !GetAtt WindowsSecurityGroup.GroupId
+      IpProtocol: tcp
+      FromPort: '3389'
+      ToPort: '3389'
+      CidrIp: 0.0.0.0/0
+
+Outputs:
+  RDPConnection:
+    Description: Public DNSName of the newly created EC2 instance
+    Value:
+      !GetAtt WindowsInstance.PublicDnsName

@@ -1,0 +1,43 @@
+AWSTemplateFormatVersion: 2010-09-09
+Description: S3 Buckets
+
+Resources:
+  ProductBucket:
+    Type: AWS::S3::Bucket
+    Properties:
+      AccessControl: BucketOwnerFullControl
+      PublicAccessBlockConfiguration:
+        BlockPublicAcls: true
+        BlockPublicPolicy: true
+        IgnorePublicAcls: true
+        RestrictPublicBuckets: true   
+
+  DataBucket:
+    Type: AWS::S3::Bucket
+    Properties:
+      AccessControl: BucketOwnerFullControl
+      PublicAccessBlockConfiguration:
+        BlockPublicAcls: true
+        BlockPublicPolicy: true
+        IgnorePublicAcls: true
+        RestrictPublicBuckets: true   
+
+Outputs:
+  ProductBucket:
+    Value: !Ref "ProductBucket"
+    Export:
+      Name: ProductBucket
+  S3BucketArn:
+    Value: !GetAtt ProductBucket.Arn
+    Export:
+      Name: ProductBucketARN
+  S3DomainName:
+    Value: !GetAtt ProductBucket.DomainName
+    Export:
+      Name: S3DomainName        
+  DataBucket:
+    Value: !Ref "DataBucket"
+    Export:
+      Name: DataBucket
+
+#https://s3bucket-productbucket-1phmj1rd1ganz.s3.amazonaws.com/task_1.yaml

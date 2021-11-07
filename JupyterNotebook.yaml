@@ -1,0 +1,107 @@
+AWSTemplateFormatVersion: 2010-09-09
+Description: Jupyter Notebook Template
+
+Parameters:
+  KeyName:
+    Description : Name of an existing EC2 key pair for SSH access to the EC2 instance.
+    Type: AWS::EC2::KeyPair::KeyName
+  InstanceType:
+      Description: EC2 instance type
+      Type: String
+      Default : 2 vCPU/1 GiB Ram - t3.micro
+      AllowedValues: 
+        - 2 vCPU/1 GiB Ram - t3.micro
+        - 2 vCPU/2 GiB Ram - t3.small
+        - 2 vCPU/4 GiB Ram - t3.medium
+        - 2 vCPU/8 GiB Ram - m5.large
+        - 4 vCPU/16 GiB Ram - m5.xlarge
+        - 8 vCPU/32 GiB Ram - m5.2xlarge
+        - 4 vCPU/16 GiB Ram | 1 GPU/16 GiB Ram - g4dn.xlarge
+
+  SSHLocation: 
+    Description: The IP address range that can SSH to the EC2 instance
+    Type: String
+    MinLength: 9
+    MaxLength: 18
+    AllowedPattern: "(\\d{1,3})\\.(\\d{1,3})\\.(\\d{1,3})\\.(\\d{1,3})/(\\d{1,2})"
+    ConstraintDescription: Must be a valid IP CIDR range of the form x.x.x.x/x.
+
+Metadata:
+  AWS::CloudFormation::Interface: 
+    ParameterGroups:
+      - Label: 
+          default: Instance configuration
+        Parameters : 
+          - InstanceType
+      - Label : 
+          default: Security configuration
+        Parameters : 
+          - KeyName
+          - SSHLocation
+    ParameterLabels: 
+      InstanceType: 
+        default: "Server size:"
+      KeyName: 
+        default: "Key pair:"
+      SSHLocation: 
+        default: "CIDR range:"
+
+Mappings: 
+  AWSRegionArch2AMI: 
+    us-east-1:
+      HVM64 : ami-08842d60
+    us-west-2:  
+      HVM64 : ami-8786c6b7
+    us-west-1:  
+      HVM64 : ami-cfa8a18a
+    eu-west-1:  
+      HVM64 : ami-748e2903
+
+Resources: 
+  # ResearcherRole:
+  #   Type: AWS::IAM::Role
+  #   Properties:
+  #     AssumeRolePolicyDocument:
+  #       Version: '2012-10-17'
+  #       Statement:
+  #       - Effect: Allow
+  #         Principal:
+  #           Service:
+  #           - ec2.amazonaws.com
+  #         Action:
+  #         - sts:AssumeRole
+  #     Path: /
+  #     ManagedPolicyArns:  
+  #       - arn:aws:iam::aws:policy/AmazonS3ReadOnlyAccess
+
+  EC2Instance: 
+
+    Type : AWS::EC2::Instance
+    Properties: 
+      InstanceType: 
+        Fn::Select: [1, !Split ["- ", !Ref InstanceType ]]
+      IamInstanceProfile: 
+        Fn::ImportValue: ResearcherInstanceProfile
+      SubnetId: 
+        Fn::ImportValue: PublicSubnet1
+      SecurityGroupIds: 
+        - Fn::ImportValue: SSHSecurityGroup
+        - Fn::ImportValue: JNSecurityGroup
+      KeyName: !Ref KeyName
+      ImageId: ami-04d0f3ec5785c7a8e
+      UserData:
+        Fn::Base64: |
+          #!/bin/bash
+          yum update -y
+          pip3 install boto3
+
+Outputs : 
+  PublicDNSName: 
+    Description: Public DNS name of the new EC2 instance
+    Value:  !GetAtt EC2Instance.PublicDnsName
+  PublicIPAddress: 
+    Description: Public IP address of the new EC2 instance
+    Value:  !GetAtt EC2Instance.PublicIp
+    
+  
+

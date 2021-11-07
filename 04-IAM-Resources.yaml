@@ -1,0 +1,159 @@
+AWSTemplateFormatVersion: 2010-09-09
+Description: Service Catalog IAM Resources
+
+Resources:
+  ResearcherInstanceRole:
+    Type: AWS::IAM::Role
+    Properties:
+      AssumeRolePolicyDocument:
+        Version: '2012-10-17'
+        Statement:
+        - Effect: Allow
+          Principal:
+            Service:
+            - ec2.amazonaws.com
+          Action:
+          - sts:AssumeRole
+      Path: /
+      ManagedPolicyArns:  
+        - arn:aws:iam::aws:policy/AmazonS3ReadOnlyAccess
+
+  ServiceCatalogRole:
+    Type: AWS::IAM::Role
+    Properties:
+      RoleName: ServiceCatalogRole
+      Path: /
+      AssumeRolePolicyDocument:
+        Version: 2012-10-17
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service:
+                - servicecatalog.amazonaws.com
+            Action:
+              - 'sts:AssumeRole'
+      Policies: 
+        - PolicyName: ServiceCatalogUsers
+          PolicyDocument:
+            Version: "2012-10-17"
+            Statement:
+              - Effect: Allow
+                Action:
+                  - servicecatalog:*
+                  - cloudformation:CreateStack
+                  - cloudformation:DeleteStack
+                  - cloudformation:DescribeStackEvents
+                  - cloudformation:DescribeStacks
+                  - cloudformation:GetTemplateSummary
+                  - cloudformation:SetStackPolicy
+                  - cloudformation:ValidateTemplate
+                  - cloudformation:UpdateStack
+                  - s3:GetObject
+                  - ec2:*
+                  - tag:*
+                Resource: '*'
+
+  ResearchGroupA:
+    Type: AWS::IAM::Group
+    Properties: 
+      GroupName: ResearchGroupA
+      Path: /      
+      ManagedPolicyArns: 
+        - arn:aws:iam::aws:policy/AWSServiceCatalogEndUserFullAccess
+#        - arn:aws:iam::aws:policy/IAMUserSSHKeys
+      Policies:
+        - PolicyName: KeyPairManagementPolicy
+          PolicyDocument:
+            Version: "2012-10-17"
+            Statement:
+              - Effect: Allow
+                Action:
+                  - ec2:ImportKeyPair
+                  - ec2:CreateKeyPair
+                  - ec2:DeleteKeyPair
+                Resource: !Sub "arn:aws:ec2:*:${AWS::AccountId}:key-pair/*"
+              - Effect: Allow
+                Action: 
+                  - ec2:DescribeKeyPairs
+                Resource: "*"
+
+  ResearchGroupB:
+    Type: AWS::IAM::Group
+    Properties: 
+      GroupName: ResearchGroupB
+      Path: /      
+      ManagedPolicyArns: 
+        - arn:aws:iam::aws:policy/AWSServiceCatalogEndUserFullAccess
+        # - arn:aws:iam::aws:policy/IAMUserSSHKeys
+      Policies:
+        - PolicyName: KeyPairManagementPolicy
+          PolicyDocument:
+            Version: "2012-10-17"
+            Statement:
+              - Effect: Allow
+                Action:
+                  - ec2:ImportKeyPair
+                  - ec2:CreateKeyPair
+                  - ec2:DeleteKeyPair
+                Resource: !Sub "arn:aws:ec2:*:${AWS::AccountId}:key-pair/*"
+              - Effect: Allow
+                Action: 
+                  - ec2:DescribeKeyPairs
+                Resource: "*"
+  
+  ResearcherA:
+    Type: AWS::IAM::User
+    Properties: 
+      Groups: 
+        - ResearchGroupA
+      LoginProfile:
+        Password: D3m0-P@ssW0rd#
+      UserName: ResearcherA
+
+  ResearcherB:
+    Type: AWS::IAM::User
+    Properties: 
+      Groups: 
+        - ResearchGroupB
+      LoginProfile:
+        Password: D3m0-P@ssW0rd#
+      UserName: ResearcherB
+
+  ResearcherInstanceProfile:     
+    Type: AWS::IAM::InstanceProfile
+    Properties: 
+      InstanceProfileName: ResearcherInstanceProfile
+      Path: /
+      Roles: 
+        - !Ref ResearcherInstanceRole
+
+Outputs:
+  # ResearcherRole:
+  #   Description: Researcher Role
+  #   Value: !GetAtt ResearcherRole.Arn
+  #   Export: 
+  #     Name: ResearcherRole
+
+  ServiceCatalogRole:
+    Description: ServiceCatalog Role
+    Value: !GetAtt ServiceCatalogRole.Arn
+    Export: 
+      Name: ServiceCatalogRole
+
+  ResearchGroupA:
+    Description: Researcher Group A
+    Value: !GetAtt ResearchGroupA.Arn
+    Export: 
+      Name: ResearchGroupA
+
+  ResearchGroupB:
+    Description: Researcher Group B
+    Value: !GetAtt ResearchGroupB.Arn
+    Export: 
+      Name: ResearchGroupB            
+
+  ResearcherInstanceProfile:
+    Description: Researcher Instance Profile
+    Value:  !Ref ResearcherInstanceProfile
+    Export: 
+      Name: ResearcherInstanceProfile         

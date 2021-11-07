@@ -1,0 +1,81 @@
+AWSTemplateFormatVersion: 2010-09-09
+Description: Portfolios
+
+Resources:
+  ResearcherAJupyterNotebook:
+    Type: AWS::ServiceCatalog::PortfolioProductAssociation
+    Properties: 
+      PortfolioId: 
+        Fn::ImportValue: PortfolioResearchersGroupA 
+      ProductId: 
+        Fn::ImportValue: ProductJupyterNotebook
+
+  ResearcherAWindows2019:
+    Type: AWS::ServiceCatalog::PortfolioProductAssociation
+    Properties: 
+      PortfolioId: 
+        Fn::ImportValue: PortfolioResearchersGroupA 
+      ProductId: 
+        Fn::ImportValue: ProductWindows2019
+
+  ResearcherBWindows2019:
+    Type: AWS::ServiceCatalog::PortfolioProductAssociation
+    Properties: 
+      PortfolioId: 
+        Fn::ImportValue: PortfolioResearchersGroupB
+      ProductId: 
+        Fn::ImportValue: ProductWindows2019
+
+  ResearcherAJupyterNotebookLaunchRole:
+    Type: AWS::ServiceCatalog::LaunchRoleConstraint
+    Properties: 
+      Description: Launch Constraint For Researcher A / Jupyter Nootbook
+      PortfolioId: 
+        Fn::ImportValue: PortfolioResearchersGroupA 
+      ProductId: 
+        Fn::ImportValue: ProductJupyterNotebook
+      RoleArn: 
+        Fn::ImportValue: ServiceCatalogRole
+    DependsOn: ResearcherAJupyterNotebook
+          
+  ResearcherAWindows2019LaunchRole:
+    Type: AWS::ServiceCatalog::LaunchRoleConstraint
+    Properties: 
+      Description: Launch Constraint For Researcher A / Windows 2019
+      PortfolioId: 
+        Fn::ImportValue: PortfolioResearchersGroupA 
+      ProductId: 
+        Fn::ImportValue: ProductWindows2019
+      RoleArn: 
+        Fn::ImportValue: ServiceCatalogRole
+    DependsOn: ResearcherAWindows2019
+
+  ResearcherBWindows2019LaunchRole:
+    Type: AWS::ServiceCatalog::LaunchRoleConstraint
+    Properties: 
+      Description: Launch Constraint For Researcher B / Windows 2019
+      PortfolioId: 
+        Fn::ImportValue: PortfolioResearchersGroupB
+      ProductId: 
+        Fn::ImportValue: ProductWindows2019
+      RoleArn: 
+        Fn::ImportValue: ServiceCatalogRole
+    DependsOn: ResearcherBWindows2019
+
+  ResearchersGroupAResearcherGroup:
+    Type: AWS::ServiceCatalog::PortfolioPrincipalAssociation
+    Properties:
+      PrincipalARN:
+        Fn::ImportValue: ResearchGroupA
+      PortfolioId: 
+        Fn::ImportValue: PortfolioResearchersGroupA
+      PrincipalType: IAM
+
+  ResearchersGroupBResearcherGroup:
+    Type: AWS::ServiceCatalog::PortfolioPrincipalAssociation
+    Properties:
+      PrincipalARN:
+        Fn::ImportValue: ResearchGroupB
+      PortfolioId: 
+        Fn::ImportValue: PortfolioResearchersGroupB
+      PrincipalType: IAM
