@@ -55,7 +55,7 @@ Mappings:
     us-west-1:  
       HVM64 : ami-cfa8a18a
     eu-west-1:  
-      HVM64 : ami-748e2903
+      HVM64 : ami-09ce2fc392a4c0fbc
 
 Resources: 
   # ResearcherRole:
@@ -80,15 +80,15 @@ Resources:
     Properties: 
       InstanceType: 
         Fn::Select: [1, !Split ["- ", !Ref InstanceType ]]
-      IamInstanceProfile: 
-        Fn::ImportValue: ResearcherInstanceProfile
+      # IamInstanceProfile: 
+      #   Fn::ImportValue: ResearcherInstanceProfile
       SubnetId: 
         Fn::ImportValue: PublicSubnet1
       SecurityGroupIds: 
         - Fn::ImportValue: SSHSecurityGroup
         - Fn::ImportValue: JNSecurityGroup
       KeyName: !Ref KeyName
-      ImageId: ami-04d0f3ec5785c7a8e
+      ImageId: ami-09ce2fc392a4c0fbc
       UserData:
         Fn::Base64: |
           #!/bin/bash

@@ -17,6 +17,17 @@ Resources:
       Path: /
       ManagedPolicyArns:  
         - arn:aws:iam::aws:policy/AmazonS3ReadOnlyAccess
+      Policies: 
+        - PolicyName: ResearcherTagPolicy
+          PolicyDocument:
+            Version: "2012-10-17"
+            Statement:
+              - Effect: Allow
+                Action:
+                  - ec2:CreateTags
+                  - ec2:DeleteTags
+                  - tag:*
+                Resource: '*'        
 
   ServiceCatalogRole:
     Type: AWS::IAM::Role
@@ -51,6 +62,7 @@ Resources:
                   - s3:GetObject
                   - ec2:*
                   - tag:*
+                  - sns:*
                 Resource: '*'
 
   ResearchGroupA:
@@ -60,7 +72,6 @@ Resources:
       Path: /      
       ManagedPolicyArns: 
         - arn:aws:iam::aws:policy/AWSServiceCatalogEndUserFullAccess
-#        - arn:aws:iam::aws:policy/IAMUserSSHKeys
       Policies:
         - PolicyName: KeyPairManagementPolicy
           PolicyDocument:
@@ -84,7 +95,7 @@ Resources:
       Path: /      
       ManagedPolicyArns: 
         - arn:aws:iam::aws:policy/AWSServiceCatalogEndUserFullAccess
-        # - arn:aws:iam::aws:policy/IAMUserSSHKeys
+          # - arn:aws:iam::aws:policy/IAMUserSSHKeys
       Policies:
         - PolicyName: KeyPairManagementPolicy
           PolicyDocument:

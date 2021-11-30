@@ -13,13 +13,18 @@ Resources:
         - Description: Template for Jupyter Notebook
           DisableTemplateValidation: False
           Info:
-            LoadTemplateFromURL: https://sc-s3-productbucket-doxr6cfwu2ud.s3.amazonaws.com/ServiceCatalog/JupyterNotebook.yaml
-              # Fn::Join: 
-              #   - ""
-              #   - - "https://"
-              #     - Fn::ImportValue: 
-              #         !Sub S3DomainName
-              #     - "/ServiceCatalog/JupiterNotebook.yaml"
+            LoadTemplateFromURL: 
+              # https://sc-s3-productbucket-doxr6cfwu2ud.s3.amazonaws.com/ServiceCatalog/JupyterNotebook.yaml
+              # https://s02-s3-productbucket-1wsgcjvxsi3sl.s3.eu-west-1.amazonaws.com/ServiceCatalog/JupyterNotebook.yaml
+              # https://s02-s3-productbucket-1wsgcjvxsi3sl.s3.amazonaws.com/ServiceCatalog/JupiterNotebook.yaml
+              Fn::Join: 
+                - ""
+                - - "https://"
+                  - Fn::ImportValue: 
+                      !Sub ProductBucket
+                  - ".s3."
+                  - Ref: "AWS::Region"
+                  - ".amazonaws.com/ServiceCatalog/JupyterNotebook.yaml"
           Name: v1
 
   Windows2019:
@@ -33,15 +38,16 @@ Resources:
         - Description: Template for Windows 2019
           DisableTemplateValidation: False
           Info:
-            LoadTemplateFromURL: https://sc-s3-productbucket-doxr6cfwu2ud.s3.amazonaws.com/ServiceCatalog/Windows.yaml
-              # Fn::Join: 
-              #   - ""
-              #   - - "https://"
-              #     - Fn::ImportValue: 
-              #         !Sub S3DomainName
-              #     - "/ServiceCatalog/JupiterNotebook.yaml"
+            LoadTemplateFromURL: 
+              Fn::Join: 
+                - ""
+                - - "https://"
+                  - Fn::ImportValue: 
+                      !Sub ProductBucket
+                  - ".s3."
+                  - Ref: "AWS::Region"
+                  - ".amazonaws.com/ServiceCatalog/JupyterNotebook.yaml"
           Name: V1
-
 
 Outputs:
   ProductJupyterNotebook:
